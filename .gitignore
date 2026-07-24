@@ -1,0 +1,36 @@
+# --- Secrets (never commit API keys / DSNs) ---
+.env
+.env.*
+!.env.example
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# --- Virtual environments ---
+venv/
+.venv/
+env/
+ENV/
+
+# --- RAG index (rebuild with: python build_index.py) ---
+nepse_kb/
+faiss_index/
+index.faiss
+index.pkl
+
+# --- Large SQL data dumps (keep local; don't commit) ---
+*.sql
+
+# --- Logs / OS / editor cruft ---
+*.log
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo

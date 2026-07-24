@@ -1,0 +1,13 @@
+fastapi
+uvicorn[standard]
+pydantic
+python-dotenv
+numpy
+langchain-groq
+langchain-cohere
+langgraph
+langchain-core
+langchain-community
+faiss-cpu
+psycopg2-binary
+ddgs
