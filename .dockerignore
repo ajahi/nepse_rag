@@ -1,0 +1,13 @@
+venv/
+.venv/
+__pycache__/
+*.pyc
+.git/
+.gitignore
+.env
+*.sql
+*.swp
+*.swo
+.pytest_cache/
+.mypy_cache/
+node_modules/

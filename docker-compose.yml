@@ -1,0 +1,29 @@
+services:
+  web:
+    build: .
+    ports:
+      - "8002:8002"
+    env_file:
+      - .env                 # ALL config lives here: keys, PG_DSN, DEFAULT_INDEX
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: timescale/timescaledb:latest-pg16
+    env_file:
+      - .env                 # POSTGRES_USER / POSTGRES_PASSWORD / POSTGRES_DB
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./index.sql:/dump/index.sql:ro                       # your TimescaleDB dump
+      - ./db-restore.sh:/docker-entrypoint-initdb.d/999-restore.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    restart: unless-stopped
+
+volumes:
+  pgdata:

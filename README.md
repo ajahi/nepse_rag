@@ -49,6 +49,34 @@ The app **boots even with nothing configured** — it just answers "I'm not sure
 on paths whose dependencies (LLM key / Cohere index / database) are missing.
 Check `/api/health` to see what's wired.
 
+## Run with Docker (recommended)
+
+Brings up the app + a TimescaleDB database (your `index.sql` dump) in one command.
+
+```bash
+# 1. keys — create .env (NOT in the repo) with your Groq + Cohere keys
+cp .env.example .env && nano .env      # GROQ_API_KEY, COHERE_API_KEY
+
+# 2. the DB dump is NOT in git (too big) — put index.sql next to docker-compose.yml
+#    (scp it from wherever it lives)
+
+# 3. build + run
+docker compose up -d --build
+# app: http://<server-ip>:8002   ·   logs: docker compose logs -f
+```
+
+First start restores the ~64 MB TimescaleDB dump, which takes a few minutes; the
+`web` container waits for the DB to be healthy before it starts.
+
+Two things that WILL trip you up on a fresh clone:
+- **`.env` is gitignored** — it won't exist after `git clone`. Create it.
+- **`index.sql` is gitignored** — it won't exist after `git clone` either. Copy it
+  in manually. Without it the DB starts empty and analytical/prediction answer
+  "I'm not sure" (RAG + web search still work).
+
+No database handy? Run just the app and point it at any Postgres:
+`docker compose up -d --build web` with `PG_DSN` set in `.env`.
+
 ## Editing the knowledge base
 
 It's deliberately small — enough for basic NEPSE questions. Edit
