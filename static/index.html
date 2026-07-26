@@ -135,6 +135,7 @@ const stream = document.getElementById('stream');
 const chat = document.getElementById('chat');
 const inp = document.getElementById('inp');
 const send = document.getElementById('send');
+const SESSION_ID = 'web-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
 
 fetch('/api/health').then(r=>r.json()).then(h=>{
   if(h.llm) document.getElementById('s-llm').classList.add('on');
@@ -198,7 +199,7 @@ async function ask(text){
   send.disabled=true;typing();
   try{
     const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({message:text})});
+      body:JSON.stringify({message:text,session_id:SESSION_ID})});
     addBot(await r.json());
   }catch(e){
     const t=document.getElementById('typing');if(t)t.remove();

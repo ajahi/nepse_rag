@@ -35,11 +35,15 @@ def _pg():
     global _conn
     if not PG_DSN:
         return None
-    import psycopg2
-    if _conn is None or _conn.closed:
-        _conn = psycopg2.connect(PG_DSN)
-        _conn.set_session(readonly=True, autocommit=True)
-    return _conn
+    try:
+        import psycopg2
+        if _conn is None or _conn.closed:
+            _conn = psycopg2.connect(PG_DSN)
+            _conn.set_session(readonly=True, autocommit=True)
+        return _conn
+    except Exception:
+        # psycopg2 missing, or DB unreachable -> degrade instead of crashing.
+        return None
 
 
 def _candidate_symbols(q: str):

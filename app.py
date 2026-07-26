@@ -17,6 +17,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 import orchestrator
+import chatlog
 from config import HAS_LLM, HAS_DB
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -27,6 +28,7 @@ app = FastAPI(title="NEPSE Chat")
 
 class ChatIn(BaseModel):
     message: str
+    session_id: str = "default"
 
 
 @app.get("/api/health")
@@ -37,11 +39,13 @@ def health():
 @app.post("/api/chat")
 def chat(body: ChatIn):
     try:
-        return orchestrator.answer(body.message)
+        result = orchestrator.answer(body.message, body.session_id)
     except Exception as e:
-        return {"answer": f"Something went wrong: {e}", "route": "error",
-                "confidence": 0.0, "low_confidence": True,
-                "routing_reason": "", "meta": {}}
+        result = {"answer": f"Something went wrong: {e}", "route": "error",
+                  "confidence": 0.0, "low_confidence": True,
+                  "routing_reason": "", "meta": {}}
+    chatlog.log_turn(body.session_id, body.message, result)
+    return result
 
 
 @app.get("/")

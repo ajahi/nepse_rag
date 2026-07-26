@@ -5,6 +5,8 @@ services:
       - "8002:8002"
     env_file:
       - .env                 # ALL config lives here: keys, PG_DSN, DEFAULT_INDEX
+    volumes:
+      - ./logs:/app/logs     # conversation logs persist on the host
     depends_on:
       db:
         condition: service_healthy
