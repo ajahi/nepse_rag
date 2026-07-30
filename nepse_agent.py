@@ -83,6 +83,15 @@ Notes:
 
 SYSTEM_TEMPLATE = """You are a NEPSE stock-data analyst agent.
 
+Today's date is {today}. The database is historical and only goes up to its last
+loaded trade date, which may be BEFORE today.
+- "today's / latest / current / most recent price" with no explicit date means
+  the most recent row available, i.e. the row with MAX(trade_date) for that
+  symbol. Query it directly (e.g. ORDER BY trade_date DESC LIMIT 1); do NOT guess
+  a calendar date, and do NOT filter by today's date literally.
+- Always report the actual trade_date you used, and if it is well before today
+  (e.g. weeks/months), say the market data isn't more recent than that date.
+
 {schema}
 
 Approach:
@@ -231,7 +240,10 @@ def build_agent(backend: str):
         tools, schema = [run_cypher, data_coverage], NEO4J_SCHEMA
     else:
         tools, schema = [run_sql, data_coverage], SQL_SCHEMA
-    agent = create_react_agent(llm, tools, prompt=SYSTEM_TEMPLATE.format(schema=schema))
+    from datetime import date
+    agent = create_react_agent(
+        llm, tools,
+        prompt=SYSTEM_TEMPLATE.format(schema=schema, today=date.today().isoformat()))
     return agent, llm
 
 

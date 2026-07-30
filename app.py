@@ -16,7 +16,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-import orchestrator
+import index2 as orchestrator
 import chatlog
 from config import HAS_LLM, HAS_DB
 

@@ -24,13 +24,14 @@ class EmailNotifier(Notifier):
 
     def __init__(self, host=None, port=None, user=None,
                  password=None, sender=None, recipients=None):
+        # Non-secret defaults are fine; credentials/addresses come from env only.
         self.host = host or os.environ.get("SMTP_HOST", "smtp.gmail.com")
         self.port = int(port or os.environ.get("SMTP_PORT", "587"))
-        self.user = user or os.environ.get("SMTP_USER", "hachuwakhikhi@gmail.com")
-        self.password = password or os.environ.get("SMTP_PASS", "eblm chxo iixj xeav")
-        self.sender = sender or os.environ.get("ALERT_FROM", "hachuwakhikhi@gmail.com")
+        self.user = user or os.environ.get("SMTP_USER")
+        self.password = password or os.environ.get("SMTP_PASS")
+        self.sender = sender or os.environ.get("ALERT_FROM") or self.user
         if recipients is None:
-            recipients = os.environ.get("ALERT_TO", "himaliamit1@gmail.com")
+            recipients = os.environ.get("ALERT_TO", "")
         if isinstance(recipients, str):
             recipients = [r.strip() for r in recipients.split(",") if r.strip()]
         self.recipients = recipients
