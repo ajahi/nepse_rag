@@ -31,6 +31,12 @@ class ChatIn(BaseModel):
     session_id: str = "default"
 
 
+class FeedbackIn(BaseModel):
+    session_id: str = "default"
+    feedback: str
+    context: dict | None = None
+
+
 @app.get("/api/health")
 def health():
     return {"ok": True, "llm": HAS_LLM, "db": HAS_DB}
@@ -46,6 +52,15 @@ def chat(body: ChatIn):
                   "routing_reason": "", "meta": {}}
     chatlog.log_turn(body.session_id, body.message, result)
     return result
+
+
+@app.post("/api/feedback")
+def feedback(body: FeedbackIn):
+    text = (body.feedback or "").strip()
+    if not text:
+        return {"ok": False, "error": "empty feedback"}
+    chatlog.log_feedback(body.session_id, text, body.context)
+    return {"ok": True}
 
 
 @app.get("/")

@@ -110,7 +110,24 @@ def answer(query: str, session_id: str = "default") -> dict:
     final = _personalize(q, draft, r.route, confidence < MIN_CONFIDENCE)
 
     history.append(session_id, q, final)
-    return _pack(final, r.route, confidence, meta, r, standalone, q)
+    result = _pack(final, r.route, confidence, meta, r, standalone, q)
+    result["draft"] = draft  # first LLM/path response, before persona restyle
+    result["confidence_reason"] = _confidence_reason(
+        r.route, confidence, draft, meta)
+    return result
+
+
+def _confidence_reason(route, confidence, draft, meta) -> str:
+    """Why the score is low — derived from signals we already have, no new calls."""
+    if meta.get("blocked"):
+        return ("blocked: numbers failed deterministic verification. "
+                + (meta.get("verification") or "")).strip()
+    if (draft or "").strip() == UNSURE:
+        return "no grounded answer: retrieval/data returned nothing usable"
+    if confidence < MIN_CONFIDENCE:
+        return (f"score {confidence} below threshold {MIN_CONFIDENCE} "
+                f"for route '{route}'")
+    return ""
 
 
 def _pack(text, route, confidence, meta, route_obj=None,
@@ -134,7 +151,11 @@ if __name__ == "__main__":
     if get_llm() is None:
         assert _personalize("x", "draft", router.CONVERSATIONAL, False) == "draft"
         assert _personalize("x", UNSURE, router.ANALYTICAL, True) == UNSURE
-        print("self-check ok (no LLM configured; persona passthrough)")
+        assert "blocked" in _confidence_reason("analytical", 0.2, "x", {"blocked": True})
+        assert "no grounded" in _confidence_reason("conversational", 0.3, UNSURE, {})
+        assert "threshold" in _confidence_reason("prediction", 0.3, "x", {})
+        assert _confidence_reason("analytical", 0.85, "x", {}) == ""
+        print("self-check ok (persona passthrough + confidence_reason)")
     else:
         q = " ".join(sys.argv[1:]) or "NEPSE ke ho?"
         print(json.dumps(answer(q), indent=2, default=str))
