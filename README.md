@@ -26,6 +26,13 @@ app.py (FastAPI) → static/index.html chat UI  (route + confidence + verificati
 Same stack as your `app28.py`: **Groq `openai/gpt-oss-120b`** for the LLM (shared
 by the SQL agent, RAG, and web search) and **Cohere `embed-v4.0`** for embeddings.
 
+**Conversation memory.** Each request carries a `session_id` (the web UI generates
+one per tab). `history.py` keeps the last few turns per session; before routing,
+the orchestrator rewrites a follow-up ("forecast it", "what about that?") into a
+standalone question using that history, so routing, retrieval and SQL all see the
+full intent. Memory is in-process (fine for one worker; use Redis/DB for many).
+Every turn is also logged durably to `logs/conversations.jsonl` (`chatlog.py`).
+
 Anti-hallucination is layered:
 - Analytical answers are machine-verified — every number is re-queried against
   the database (`verifier.py`); a mismatch **blocks** the answer.

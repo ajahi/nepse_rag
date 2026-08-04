@@ -26,6 +26,9 @@ index.pkl
 # --- Large SQL data dumps (keep local; don't commit) ---
 *.sql
 
+# --- Conversation logs ---
+logs/
+
 # --- Logs / OS / editor cruft ---
 *.log
 .DS_Store
